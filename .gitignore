@@ -1,0 +1,29 @@
+# CMake / build trees
+/build*/
+/cmake-build-*/
+/Makefile
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# Generated learning data and model runs
+/data/
+/runs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Large raw demo clips; curated media/ files stay tracked
+/media/demo/
+
+# Local prebuilt MuJoCo tarball (the source lives in third_party/mujoco)
+/mujoco-4.0.1/
+/mujoco-*.tar.gz
+
+# Misc
+*.ppm
+.DS_Store

@@ -1,0 +1,115 @@
+<mujoco model="pick_and_place">
+  <compiler angle="radian" autolimits="true" inertiafromgeom="true"/>
+
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast"
+          cone="elliptic" impratio="10"/>
+
+  <visual>
+    <global offwidth="1920" offheight="1080" fovy="42" glow="0"/>
+    <quality shadowsize="4096"/>
+    <map fogstart="3" fogend="9" haze="0"/>
+    <headlight ambient="0.30 0.30 0.33" diffuse="0.45 0.45 0.45"
+               specular="0.15 0.15 0.15"/>
+  </visual>
+
+  <asset>
+    <texture name="wood" type="2d" builtin="checker"
+             rgb1="0.33 0.25 0.18" rgb2="0.38 0.29 0.21"
+             width="512" height="512"/>
+    <material name="table"   texture="wood" texrepeat="6 6" texuniform="true" reflectance="0.06"/>
+    <material name="red"     rgba="0.82 0.03 0.02 1" specular="0.6" shininess="0.8"/>
+    <material name="steel"   rgba="0.66 0.69 0.74 1" specular="0.9" shininess="0.9"/>
+    <material name="dark"    rgba="0.14 0.15 0.17 1" specular="0.3" shininess="0.4"/>
+    <material name="rubber"  rgba="0.025 0.025 0.03 1" specular="0.05" shininess="0.1"/>
+    <material name="floor"   rgba="0.05 0.06 0.08 1" specular="0.1" shininess="0.2"/>
+  </asset>
+
+  <worldbody>
+    <light name="key" pos="0.2 -0.55 1.8" dir="-0.05 0.30 -1" cutoff="60" exponent="0.5"
+           diffuse="0.85 0.82 0.78" specular="0.5 0.5 0.5" castshadow="true"/>
+    <light name="fill" pos="-1.2 1.4 1.8" dir="0.5 -0.6 -0.6" directional="true"
+           diffuse="0.22 0.26 0.34" castshadow="false"/>
+    <light name="rim" pos="1.5 1.2 1.2" dir="-0.6 -0.5 -0.4" directional="true"
+           diffuse="0.18 0.20 0.24" castshadow="false"/>
+
+    <geom name="floor"      type="plane" size="0 0 0.05" pos="0 0 -0.55" material="floor"/>
+    <geom name="table_top"  type="box"   pos="0.15 -0.08 -0.02" size="0.40 0.40 0.02" material="table"/>
+    <geom name="table_base" type="box"   pos="0.15 -0.08 -0.28" size="0.26 0.26 0.24" material="dark"/>
+
+    <!-- ================= 4-DOF arm (yaw + 3 pitch) ================= -->
+    <body name="robot" pos="0 0 0">
+      <joint name="yaw" type="hinge" axis="0 0 1" range="-3.1 3.1"
+             damping="0.4" armature="0.05"/>
+      <geom name="pedestal" type="cylinder" pos="0 0 0.045" size="0.085 0.045"
+            material="dark" contype="0" conaffinity="0"/>
+      <geom name="column" type="capsule" fromto="0 0 0.09 0 0 0.22" size="0.045"
+            material="steel" contype="0" conaffinity="0"/>
+
+      <body name="upper" pos="0 0 0.22">
+        <joint name="shoulder" type="hinge" axis="0 1 0" range="-2.9 2.9"
+               damping="0.6" armature="0.05"/>
+        <geom name="upper_arm" type="capsule" fromto="0 0 0 0.32 0 0" size="0.042"
+              material="steel" contype="0" conaffinity="0"/>
+        <geom name="shoulder_hub" type="cylinder" pos="0 0 0" size="0.055 0.048"
+              quat="0.70710678 0.70710678 0 0" material="dark"
+              contype="0" conaffinity="0"/>
+
+        <body name="forearm" pos="0.32 0 0">
+          <joint name="elbow" type="hinge" axis="0 1 0" range="-2.9 2.9"
+                 damping="0.5" armature="0.04"/>
+          <geom name="forearm_geom" type="capsule" fromto="0 0 0 0.28 0 0" size="0.035"
+                material="steel" contype="0" conaffinity="0"/>
+          <geom name="elbow_hub" type="cylinder" pos="0 0 0" size="0.046 0.040"
+                quat="0.70710678 0.70710678 0 0" material="dark"
+                contype="0" conaffinity="0"/>
+
+          <body name="hand" pos="0.28 0 0">
+            <joint name="wrist" type="hinge" axis="0 1 0" range="-2.9 2.9"
+                   damping="0.4" armature="0.02"/>
+            <geom name="wrist_hub" type="cylinder" pos="0 0 0" size="0.038 0.032"
+                  quat="0.70710678 0.70710678 0 0" material="dark"
+                  contype="0" conaffinity="0"/>
+            <geom name="palm" type="box" pos="0.04 0 0" size="0.04 0.028 0.016"
+                  material="dark" contype="0" conaffinity="0"/>
+
+            <!-- tool center point (between the fingers) -->
+            <site name="tool" pos="0.104 0 0" size="0.008" rgba="0 1 0 0.5" group="3"/>
+
+            <body name="finger_l" pos="0.104 0.036 0">
+              <joint name="fl" type="slide" axis="0 1 0" range="-0.030 0.006"
+                     damping="0.05" armature="0.0005"/>
+              <geom name="finger_l" type="box" pos="0 0 0" size="0.022 0.007 0.016"
+                    material="rubber" friction="2.0 0.05 0.001" condim="4"
+                    solref="0.002 1" solimp="0.9 0.95 0.001"/>
+            </body>
+
+            <body name="finger_r" pos="0.104 -0.036 0">
+              <joint name="fr" type="slide" axis="0 -1 0" range="-0.030 0.006"
+                     damping="0.05" armature="0.0005"/>
+              <geom name="finger_r" type="box" pos="0 0 0" size="0.022 0.007 0.016"
+                    material="rubber" friction="2.0 0.05 0.001" condim="4"
+                    solref="0.002 1" solimp="0.9 0.95 0.001"/>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- ================= red cube to pick ================= -->
+    <body name="cube" pos="0.38 0.10 0.0205">
+      <freejoint name="cube_joint"/>
+      <geom name="cube" type="box" size="0.02 0.02 0.02" mass="0.06"
+            material="red" friction="1.5 0.05 0.001" condim="4"
+            solref="0.002 1" solimp="0.95 0.98 0.001"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="a_yaw"      joint="yaw"      ctrlrange="-25 25"/>
+    <motor name="a_shoulder" joint="shoulder" ctrlrange="-40 40"/>
+    <motor name="a_elbow"    joint="elbow"    ctrlrange="-30 30"/>
+    <motor name="a_wrist"    joint="wrist"    ctrlrange="-12 12"/>
+    <motor name="a_fl"       joint="fl"       ctrlrange="-60 60"/>
+    <motor name="a_fr"       joint="fr"       ctrlrange="-60 60"/>
+  </actuator>
+</mujoco>
