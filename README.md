@@ -4,7 +4,7 @@ A 4-DOF robotic arm demo, equipped with a two finger gripper, capable of picking
 
 Every frame is rendered offscreen and streamed into `ffmpeg`, producing `pick_and_place.mp4`.
 
-![demo](demo_frame.png)
+![demo](demo.gif)
 
 | | |
 |---|---|
@@ -68,5 +68,5 @@ scene.xml           MuJoCo model (arm, gripper, table, cube, lights)
 src/, tests/        sources (see layout above)
 third_party/mujoco/ MuJoCo 4.0.1 source submodule (built by CMake)
 pick_and_place.mp4  recorded result
-demo_frame.png      poster frame
+demo.gif            looping preview
 ```
